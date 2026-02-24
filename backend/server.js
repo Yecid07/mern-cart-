@@ -1,9 +1,10 @@
-import express from 'express';
+﻿import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { connectDB } from './config/db.js';
-import productRoutes from './routes/product.routes.js';    
-
+import productRoutes from './routes/product.routes.js';
+import userRoutes from './routes/user.routes.js';
+import orderRoutes from './routes/order.routes.js';
 
 dotenv.config();
 
@@ -14,7 +15,9 @@ const __dirname = path.resolve();
 
 app.use(express.json()); //to parse JSON data from request body
 
-app.use("/api/products", productRoutes);    
+app.use('/api/products', productRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/orders', orderRoutes);
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '/frontend/dist')));
