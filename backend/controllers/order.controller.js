@@ -1,5 +1,6 @@
 ﻿import mongoose from "mongoose";
 import Order from "../models/order.model.js";
+import User from "../models/user.model.js";
 
 export const getOrders = async (req, res) => {
   try {
@@ -23,6 +24,10 @@ export const createOrder = async (req, res) => {
       .json({ success: false, message: "Please provide required order fields" });
   }
 
+  if (!mongoose.Types.ObjectId.isValid(order.user)) {
+    return res.status(400).json({ success: false, message: "Invalid user ID" });
+  }
+
   const computedTotal = order.items.reduce(
     (acc, item) => acc + Number(item.price) * Number(item.quantity),
     0
@@ -33,6 +38,11 @@ export const createOrder = async (req, res) => {
   }
 
   try {
+    const existingUser = await User.findById(order.user);
+    if (!existingUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
     const newOrder = new Order({
       user: order.user,
       items: order.items,
@@ -59,6 +69,17 @@ export const updateOrder = async (req, res) => {
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(404).json({ success: false, message: "Invalid order ID" });
+  }
+
+  if (order.user) {
+    if (!mongoose.Types.ObjectId.isValid(order.user)) {
+      return res.status(400).json({ success: false, message: "Invalid user ID" });
+    }
+
+    const existingUser = await User.findById(order.user);
+    if (!existingUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
   }
 
   if (order.items && Array.isArray(order.items)) {
