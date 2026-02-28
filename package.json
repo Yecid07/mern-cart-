@@ -1,11 +1,16 @@
-{
+﻿{
   "name": "cart-course",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon backend/server.js",
-    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
-    "start": "cross-env NODE_ENV=production node backend/server.js"
+    "build": "npm run build:frontend",
+    "build:frontend": "npm run build --prefix frontend",
+    "start": "cross-env NODE_ENV=production node backend/server.js",
+    "test": "cross-env NODE_ENV=test vitest run",
+    "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
+    "quality:staging": "npm run test:coverage && node scripts/check-coverage.mjs 60",
+    "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"
   },
   "type": "module",
   "keywords": [],
@@ -25,8 +30,10 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "cross-env": "^10.0.0",
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "vitest": "^4.0.18"
   },
   "description": ""
 }
