@@ -12,6 +12,14 @@ const PORT = process.env.PORT || 5000;
 
 app.use(express.json()); //to parse JSON data from request body
 
+app.get('/', (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: 'Cart Course API is running',
+        env: process.env.NODE_ENV || 'development',
+    });
+});
+
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
