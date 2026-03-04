@@ -31,7 +31,12 @@ jobs:
         run: docker build -t cart-course:${{ github.sha }} .
 
       - name: Deploy to testing
-        if: github.ref == 'refs/heads/testing' && github.event_name == 'push' && secrets.STAGING_DEPLOY_HOOK_URL != ''
+        if: github.ref == 'refs/heads/testing' && github.event_name == 'push'
         env:
           DEPLOY_HOOK: ${{ secrets.STAGING_DEPLOY_HOOK_URL }}
-        run: curl -fsSL -X POST "$DEPLOY_HOOK"
+        run: |
+          if [ -n "$DEPLOY_HOOK" ]; then
+            curl -fsSL -X POST "$DEPLOY_HOOK"
+          else
+            echo "STAGING_DEPLOY_HOOK_URL is not set. Skipping deploy."
+          fi
