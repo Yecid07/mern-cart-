@@ -1,0 +1,37 @@
+﻿name: CI Testing
+
+on:
+  push:
+    branches: [testing]
+  pull_request:
+    branches: [testing]
+
+jobs:
+  test-and-deploy-testing:
+    runs-on: ubuntu-latest
+    environment: testing
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run quality:staging
+
+      - name: Build docker image
+        run: docker build -t cart-course:${{ github.sha }} .
+
+      - name: Deploy to testing
+        if: github.ref == 'refs/heads/testing' && github.event_name == 'push' && secrets.STAGING_DEPLOY_HOOK_URL != ''
+        env:
+          DEPLOY_HOOK: ${{ secrets.STAGING_DEPLOY_HOOK_URL }}
+        run: curl -fsSL -X POST "$DEPLOY_HOOK"
