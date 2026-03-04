@@ -1,0 +1,23 @@
+﻿services:
+  api:
+    build: .
+    container_name: cart_api_testing
+    ports:
+      - "5001:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=development
+      - MONGO_URI=mongodb://mongo_testing:27017/cart_testing
+    depends_on:
+      - mongo_testing
+
+  mongo_testing:
+    image: mongo:7
+    container_name: cart_mongo_testing
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_testing_data:/data/db
+
+volumes:
+  mongo_testing_data:
