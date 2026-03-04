@@ -6,7 +6,7 @@
       - "5001:5000"
     environment:
       - PORT=5000
-      - NODE_ENV=development
+      - NODE_ENV=testing
       - MONGO_URI=mongodb://mongo_testing:27017/cart_testing
     depends_on:
       - mongo_testing

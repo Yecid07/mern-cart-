@@ -3,14 +3,9 @@
 WORKDIR /app
 
 COPY package*.json ./
-COPY frontend/package*.json ./frontend/
+RUN npm ci --omit=dev
 
-RUN npm ci
-RUN npm ci --prefix frontend
-
-COPY . .
-
-RUN npm run build --prefix frontend
+COPY backend ./backend
 
 EXPOSE 5000
 
