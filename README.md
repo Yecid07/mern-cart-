@@ -2,6 +2,10 @@
 
 Guia paso a paso para ejecutar el proyecto y validar la entrega (testing/production).
 
+## URLs de despliegue
+- Production: `https://cart-api-production.onrender.com/`
+- Testing: `https://cart-api-testing.onrender.com/`
+
 ## 1. Requisitos
 - Node.js 20+
 - npm 10+
@@ -138,3 +142,4 @@ Cumple requisito de minimo 3 entidades con persistencia real en MongoDB.
 ## 12. Notas
 - Este repositorio esta configurado como API-only en Docker (sin servir frontend).
 - Si abres el puerto de Mongo en navegador veras un mensaje de protocolo (es normal). Usa Compass/mongosh.
+
