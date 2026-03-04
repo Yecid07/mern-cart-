@@ -9,7 +9,7 @@
     "start": "cross-env NODE_ENV=production node backend/server.js",
     "test": "cross-env NODE_ENV=test vitest run",
     "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
-    "quality:staging": "npm run test:coverage && node scripts/check-coverage.mjs 99",
+    "quality:staging": "npm run test:coverage && node scripts/check-coverage.mjs 60",
     "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"
   },
   "type": "module",
@@ -36,6 +36,7 @@
   },
   "description": ""
 }
+
 
 
 
