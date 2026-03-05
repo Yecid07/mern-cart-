@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "cart-course",
   "version": "1.0.0",
   "main": "index.js",
@@ -10,7 +10,7 @@
     "test": "cross-env NODE_ENV=test vitest run",
     "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "quality:staging": "npm run test:coverage && node scripts/check-coverage.mjs 60",
-    "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"
+    "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99"
   },
   "type": "module",
   "keywords": [],
@@ -36,3 +36,5 @@
   },
   "description": ""
 }
+
+
