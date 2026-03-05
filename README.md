@@ -143,3 +143,29 @@ Cumple requisito de minimo 3 entidades con persistencia real en MongoDB.
 - Este repositorio esta configurado como API-only en Docker (sin servir frontend).
 - Si abres el puerto de Mongo en navegador veras un mensaje de protocolo (es normal). Usa Compass/mongosh.
 
+## 13. Simular fallo de pipeline (sin deploy a production)
+
+Comandos en PowerShell para forzar fallo por cobertura en `production`:
+
+```powershell
+git checkout production
+(Get-Content package.json -Raw) -replace '"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"','"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99"' | Set-Content -Encoding utf8 package.json
+git add package.json
+git commit -m "🧪 force production coverage failure demo"
+git push origin production
+```
+
+Resultado esperado:
+- `CI Production` falla en `Run tests with coverage`.
+- No se ejecuta deploy por hook.
+
+Para restaurar el valor normal (`85`):
+
+```powershell
+git checkout production
+(Get-Content package.json -Raw) -replace '"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99"','"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"' | Set-Content -Encoding utf8 package.json
+git add package.json
+git commit -m "✅ restore production coverage threshold to 85"
+git push origin production
+```
+
