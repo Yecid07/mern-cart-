@@ -1,0 +1,139 @@
+{
+  "gitmoji_reference": {
+    "major_releases": {
+      "🎉": {
+        "name": "tada",
+        "meaning": "Release importante / Inicial",
+        "semver": "MAJOR",
+        "example": "git commit -m \"🎉 chore(release): v2.0.0 - nueva arquitectura multicloud\""
+      },
+      "🔥": {
+        "name": "fire",
+        "meaning": "Eliminar código/característica (breaking change)",
+        "semver": "MAJOR",
+        "example": "git commit -m \"🔥 feat(api): eliminar soporte para v1\""
+      },
+      "💥": {
+        "name": "boom",
+        "meaning": "Breaking change explícito",
+        "semver": "MAJOR",
+        "example": "git commit -m \"💥 feat(order): cambiar estructura de respuesta\""
+      }
+    },
+    "features": {
+      "✨": {
+        "name": "sparkles",
+        "meaning": "Nueva característica",
+        "semver": "MINOR",
+        "example": "git commit -m \"✨ feat(product): agregar búsqueda por categoría\""
+      },
+      "🚀": {
+        "name": "rocket",
+        "meaning": "Deployment / Mejora de performance",
+        "semver": "PATCH",
+        "example": "git commit -m \"🚀 perf(api): optimizar queries de MongoDB\""
+      }
+    },
+    "fixes": {
+      "🐛": {
+        "name": "bug",
+        "meaning": "Corrección de bug",
+        "semver": "PATCH",
+        "example": "git commit -m \"🐛 fix(order): corregir cálculo de impuestos\""
+      },
+      "🔒": {
+        "name": "lock",
+        "meaning": "Fix de seguridad",
+        "semver": "PATCH",
+        "example": "git commit -m \"🔒 security(auth): validar permisos en rutas protegidas\""
+      }
+    },
+    "improvements": {
+      "♻️": {
+        "name": "recycle",
+        "meaning": "Refactoring de código",
+        "semver": "PATCH",
+        "example": "git commit -m \"♻️ refactor(user-service): simplificar autenticación\""
+      },
+      "🎨": {
+        "name": "art",
+        "meaning": "Cambios en estilos o formato",
+        "semver": "PATCH",
+        "example": "git commit -m \"🎨 style(components): formatear código\""
+      },
+      "⬆️": {
+        "name": "arrow_up",
+        "meaning": "Actualizar dependencias",
+        "semver": "PATCH",
+        "example": "git commit -m \"⬆️ deps: actualizar express de 4.20 a 4.21\""
+      },
+      "⬇️": {
+        "name": "arrow_down",
+        "meaning": "Downgrade de dependencias",
+        "semver": "PATCH",
+        "example": "git commit -m \"⬇️ deps: downgrade react por compatibilidad\""
+      }
+    },
+    "documentation": {
+      "📚": {
+        "name": "books",
+        "meaning": "Cambios en documentación",
+        "semver": "NONE",
+        "example": "git commit -m \"📚 docs(readme): agregar ejemplos de API\""
+      }
+    },
+    "testing": {
+      "✅": {
+        "name": "white_check_mark",
+        "meaning": "Agregar o actualizar tests",
+        "semver": "PATCH",
+        "example": "git commit -m \"✅ test(product): agregar test de validación\""
+      }
+    },
+    "other": {
+      "📦": {
+        "name": "package",
+        "meaning": "Compilación o packaging",
+        "semver": "PATCH",
+        "example": "git commit -m \"📦 build: configurar webpack\""
+      },
+      "🗑️": {
+        "name": "wastebasket",
+        "meaning": "Deprecated o eliminar",
+        "semver": "PATCH",
+        "example": "git commit -m \"🗑️ chore: remover método deprecated\""
+      },
+      "🔗": {
+        "name": "link",
+        "meaning": "Cambios de correlación entre servicios",
+        "semver": "PATCH",
+        "example": "git commit -m \"🔗 fix: conexión entre microservicios\""
+      }
+    }
+  },
+  "commit_format": {
+    "template": "<emoji> <type>(<scope>): <subject>",
+    "rules": [
+      "1. El emoji es OBLIGATORIO al inicio",
+      "2. El type y scope van entre paréntesis",
+      "3. La descripción en minúscula, presente, sin punto al final",
+      "4. Máximo 72 caracteres en la primera línea",
+      "5. Usar inglés o español consistentemente"
+    ]
+  },
+  "semver_mapping": {
+    "MAJOR": ["🎉", "🔥", "💥"],
+    "MINOR": ["✨"],
+    "PATCH": ["🐛", "🔒", "♻️", "🎨", "⬆️", "⬇️", "📦", "🚀", "✅", "🔗", "🗑️"],
+    "NO_CHANGE": ["📚", "🔍"]
+  },
+  "quick_commands": {
+    "commit_new_feature": "git commit -m \"✨ feat(scope): descripción de la característica\"",
+    "commit_bug": "git commit -m \"🐛 fix(scope): descripción del fix\"",
+    "commit_docs": "git commit -m \"📚 docs(scope): descripción del cambio\"",
+    "commit_breaking": "git commit -m \"💥 feat(scope): descripción del breaking change\"",
+    "create_release": "npm run release",
+    "dry_run_release": "npm run release:dry",
+    "view_changelog": "cat CHANGELOG.md"
+  }
+}

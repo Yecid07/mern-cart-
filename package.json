@@ -1,6 +1,6 @@
-﻿{
+{
   "name": "cart-course",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development nodemon backend/server.js",
@@ -10,7 +10,11 @@
     "test": "cross-env NODE_ENV=test vitest run",
     "test:coverage": "cross-env NODE_ENV=test vitest run --coverage",
     "quality:staging": "npm run test:coverage && node scripts/check-coverage.mjs 60",
-    "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99"
+    "quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99",
+    "prepare": "husky install",
+    "release": "semantic-release",
+    "release:dry": "semantic-release --dry-run",
+    "release:debug": "DEBUG=* semantic-release"
   },
   "type": "module",
   "keywords": [],
@@ -29,12 +33,16 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
+    "@commitlint/config-conventional": "^20.5.0",
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
     "@vitest/coverage-v8": "^4.0.18",
+    "commitlint": "^20.5.0",
     "cross-env": "^10.0.0",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.10",
+    "semantic-release": "^25.0.3",
     "vitest": "^4.0.18"
   },
   "description": ""
 }
-
-

@@ -143,3 +143,9 @@ Cumple requisito de minimo 3 entidades con persistencia real en MongoDB.
 - Este repositorio esta configurado como API-only en Docker (sin servir frontend).
 - Si abres el puerto de Mongo en navegador veras un mensaje de protocolo (es normal). Usa Compass/mongosh.
 
+##13. Fallo de producción 
+- git checkout production
+- (Get-Content package.json -Raw) -replace '"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 85"','"quality:production": "npm run test:coverage && node scripts/check-coverage.mjs 99"' | Set-Content -Encoding utf8 package.json
+-git add package.json
+-git commit -m "🧪 force production coverage failure"
+-git push origin production
