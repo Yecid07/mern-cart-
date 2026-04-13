@@ -15,14 +15,20 @@ app.use(express.json()); //to parse JSON data from request body
 app.get('/', (req, res) => {
     res.status(200).json({
         success: true,
-        message: 'Cart Course API is running',
+        message: 'Cart Course API v2.0 is running',
         env: process.env.NODE_ENV || 'development',
+        versions: ['v1 (/api)', 'v2 (/api/v2)'],
     });
 });
 
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
+
+// New versioned endpoints (v2)
+app.use('/api/v2/products', productRoutes);
+app.use('/api/v2/users', userRoutes);
+app.use('/api/v2/orders', orderRoutes);
 
 app.listen(PORT, () => {
     connectDB();
