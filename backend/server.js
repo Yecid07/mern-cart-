@@ -20,9 +20,9 @@ app.get('/', (req, res) => {
     });
 });
 
-app.use('/api/products', productRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api/v2/products', productRoutes);
+app.use('/api/v2/users', userRoutes);
+app.use('/api/v2/orders', orderRoutes);
 
 app.listen(PORT, () => {
     connectDB();
