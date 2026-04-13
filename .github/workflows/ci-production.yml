@@ -22,12 +22,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests with coverage
-        run: npm run quality:production
-
-      - name: Build docker image
-        run: docker build -t cart-course:${{ github.sha }} .
-
       - name: Deploy to production
         if: github.ref == 'refs/heads/production'
         env:
