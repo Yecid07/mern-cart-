@@ -4,6 +4,7 @@ import { connectDB } from './config/db.js';
 import productRoutes from './routes/product.routes.js';
 import userRoutes from './routes/user.routes.js';
 import orderRoutes from './routes/order.routes.js';
+import messageRoutes from './routes/message.routes.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/v2/products', productRoutes);
 app.use('/api/v2/users', userRoutes);
 app.use('/api/v2/orders', orderRoutes);
+app.use('/api/v2/mensaje', messageRoutes);
 
 app.listen(PORT, () => {
     connectDB();
