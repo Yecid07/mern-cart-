@@ -27,6 +27,8 @@ Crea `.env` en la raiz basado en `.env.example`:
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/cart_local
 NODE_ENV=development
+SEBASTIAN_MESSAGE_API_URL=http://shipment-alb-468259091.us-east-2.elb.amazonaws.com/api/v2/mensaje
+FIRESTORE_MESSAGES_COLLECTION=message_chain_logs
 ```
 
 ## 4. Ejecutar API en local (sin Docker)

@@ -1,113 +1,167 @@
-import Order from "../models/order.model.js";
+import User from "../models/user.model.js";
+import { saveMessageLog } from "../config/firestore.js";
+
+const buildSebasMessageUrl = () => {
+  const baseUrl = process.env.SEBASTIAN_MESSAGE_API_URL;
+  if (!baseUrl) {
+    return null;
+  }
+
+  return baseUrl.replace(/\/+$/, "");
+};
+
+const extractMessageObjects = (body = {}) => {
+  if (Array.isArray(body.objetosMensaje)) {
+    return body.objetosMensaje;
+  }
+
+  if (Array.isArray(body.chain)) {
+    return body.chain;
+  }
+
+  return [];
+};
 
 /**
  * POST /api/v2/mensaje
- * Recibe mensaje de Sebas (entidad B) con entidad A agregada
- * Agrega entidad C (Order) y propaga la respuesta
+ * Recibe mensaje desde Santiago con el cuidador, agrega usuario y lo reenvia a Sebas.
  */
 export const processMessage = async (req, res) => {
   try {
-    const { entidadA, entidadB, metadata } = req.body;
+    const objetosMensaje = extractMessageObjects(req.body);
+    const metadata = req.body?.metadata || {};
 
-    // Validar que haya contenido previo
-    if (!entidadA || !entidadB) {
+    await saveMessageLog({
+      stage: "received_from_santiago",
+      payload: req.body,
+      metadata,
+    });
+
+    if (objetosMensaje.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "Missing entidadA or entidadB in the message chain"
+        message: "Missing objetosMensaje in the message chain",
       });
     }
 
-    // Obtener un Order de la BD (entidad C de Yécid)
-    const entidadC = await Order.findOne({})
-      .populate("user", "name email")
-      .populate("items.product", "name price image")
-      .lean();
-
-    if (!entidadC) {
+    const usuario = await User.findOne({}).lean();
+    if (!usuario) {
       return res.status(404).json({
         success: false,
-        message: "No orders available to add to message chain"
+        message: "No users available to add to message chain",
       });
     }
 
-    // Agregar metadata del paso actual
-    const updatedMetadata = {
-      ...metadata,
-      yecidProcessedAt: new Date().toISOString(),
-      yecidService: "Orders API - Cloud Run (GCP)"
-    };
+    const sebasMessageUrl = buildSebasMessageUrl();
+    if (!sebasMessageUrl) {
+      return res.status(500).json({
+        success: false,
+        message: "SEBASTIAN_MESSAGE_API_URL is not configured",
+      });
+    }
 
-    // Construir respuesta con las 3 entidades
-    const responseMessage = {
-      success: true,
-      message: "Message processed through all services",
-      chain: {
-        entidadA, // De Santiago (AWS)
-        entidadB, // De Sebas (GCP)
-        entidadC, // De Yécid (GCP) - Orders
+    const updatedMessage = {
+      objetosMensaje: [...objetosMensaje, { usuario }],
+      metadata: {
+        ...metadata,
+        yecidProcessedAt: new Date().toISOString(),
+        yecidService: "Users API - Cloud Run (GCP)",
       },
-      metadata: updatedMetadata,
-      processedAt: new Date().toISOString(),
-      version: "v2"
+      version: "v2",
     };
 
-    res.status(200).json(responseMessage);
+    await saveMessageLog({
+      stage: "forwarded_to_sebas",
+      payload: updatedMessage,
+      metadata: updatedMessage.metadata,
+    });
+
+    const downstreamResponse = await fetch(sebasMessageUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedMessage),
+    });
+
+    const responseBody = await downstreamResponse.json();
+    await saveMessageLog({
+      stage: "response_from_sebas",
+      payload: responseBody,
+      metadata: updatedMessage.metadata,
+      statusCode: downstreamResponse.status,
+    });
+    return res.status(downstreamResponse.status).json(responseBody);
   } catch (error) {
     console.log("Error processing message:", error.message);
-    res.status(500).json({
+    await saveMessageLog({
+      stage: "message_chain_error",
+      payload: req.body,
+      error: error.message,
+    });
+    return res.status(500).json({
       success: false,
       message: "Server error processing message",
-      error: error.message
+      error: error.message,
     });
   }
 };
 
 /**
  * POST /api/v2/mensaje/enrich
- * Versión alternativa que permite pasar objetos específicos a enriquecer
+ * Permite enriquecer el arreglo de objetos con un usuario especifico o el primero disponible.
  */
 export const enrichMessage = async (req, res) => {
   try {
-    const { previousEntities, orderId } = req.body;
+    const { userId } = req.body || {};
+    const objetosMensaje = extractMessageObjects(req.body);
 
-    let entidadC;
-    if (orderId) {
-      entidadC = await Order.findById(orderId)
-        .populate("user", "name email")
-        .populate("items.product", "name price image")
-        .lean();
+    let usuario;
+    if (userId) {
+      usuario = await User.findById(userId).lean();
 
-      if (!entidadC) {
+      if (!usuario) {
         return res.status(404).json({
           success: false,
-          message: `Order with ID ${orderId} not found`
+          message: `User with ID ${userId} not found`,
         });
       }
     } else {
-      entidadC = await Order.findOne({})
-        .populate("user", "name email")
-        .populate("items.product", "name price image")
-        .lean();
+      usuario = await User.findOne({}).lean();
     }
 
-    const enrichedMessage = {
+    if (!usuario) {
+      return res.status(404).json({
+        success: false,
+        message: "No users available to enrich the message",
+      });
+    }
+
+    const enrichedPayload = {
       success: true,
-      entities: {
-        ...previousEntities,
-        entidadC // Agrega Orders
-      },
-      processedBy: "Yécid - Orders Service (Cloud Run GCP)",
+      objetosMensaje: [...objetosMensaje, { usuario }],
+      processedBy: "Yecid - Users Service (Cloud Run GCP)",
       timestamp: new Date().toISOString(),
-      apiVersion: "v2"
+      apiVersion: "v2",
     };
 
-    res.status(200).json(enrichedMessage);
+    await saveMessageLog({
+      stage: "local_enrich_message",
+      payload: enrichedPayload,
+    });
+
+    return res.status(200).json(enrichedPayload);
   } catch (error) {
     console.log("Error enriching message:", error.message);
-    res.status(500).json({
+    await saveMessageLog({
+      stage: "local_enrich_error",
+      payload: req.body,
+      error: error.message,
+    });
+    return res.status(500).json({
       success: false,
       message: "Error enriching message",
-      error: error.message
+      error: error.message,
     });
   }
 };
