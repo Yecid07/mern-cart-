@@ -69,8 +69,20 @@ export const processMessage = async (req, res) => {
       body: JSON.stringify(payloadToSebas),
     });
 
-    const responseBody = await downstreamResponse.json();
-    return res.status(downstreamResponse.status).json(responseBody);
+    if (!downstreamResponse.ok) {
+      return res.status(downstreamResponse.status).json({
+        success: false,
+        message: "Failed to send message to Sebas",
+        objetosMensaje: payloadToSebas.objetosMensaje,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Message sent to Sebas successfully",
+      objetosMensaje: payloadToSebas.objetosMensaje,
+      version: "v2",
+    });
   } catch (error) {
     console.log("Error processing message:", error.message);
     return res.status(500).json({
