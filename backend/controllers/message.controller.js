@@ -11,6 +11,15 @@ const buildSebasMessageUrl = () => {
   return baseUrl.replace(/\/+$/, "");
 };
 
+const buildSebasRecordsUrl = () => {
+  const baseUrl = process.env.SEBASTIAN_RECORDS_API_URL;
+  if (!baseUrl) {
+    return null;
+  }
+
+  return baseUrl.replace(/\/+$/, "");
+};
+
 const extractMessageObjects = (body = {}) => {
   if (Array.isArray(body.objetosMensaje)) {
     return body.objetosMensaje;
@@ -200,15 +209,15 @@ export const enrichMessage = async (req, res) => {
 
 export const getSebasRecords = async (req, res) => {
   try {
-    const sebasMessageUrl = buildSebasMessageUrl();
-    if (!sebasMessageUrl) {
+    const sebasRecordsUrl = buildSebasRecordsUrl();
+    if (!sebasRecordsUrl) {
       return res.status(500).json({
         success: false,
-        message: "SEBASTIAN_MESSAGE_API_URL is not configured",
+        message: "SEBASTIAN_RECORDS_API_URL is not configured",
       });
     }
 
-    const response = await fetch(sebasMessageUrl, {
+    const response = await fetch(sebasRecordsUrl, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
