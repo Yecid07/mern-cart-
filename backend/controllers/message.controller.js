@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 let latestMessageState = null;
 
 const buildSebasMessageUrl = () => {
-  const baseUrl = process.env.production.SEBASTIAN_MESSAGE_API_URL || process.env.SEBASTIAN_MESSAGE_API_URL;
+  const baseUrl = process.env.SEBASTIAN_MESSAGE_API_URL;
   if (!baseUrl) {
     return null;
   }
@@ -51,6 +51,31 @@ export const getLatestMessage = async (req, res) => {
   }
 
   return res.status(200).json(latestMessageState);
+};
+
+export const receiveSebasMessage = async (req, res) => {
+  const objetosMensaje = extractMessageObjects(req.body);
+
+  if (objetosMensaje.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing objetosMensaje in Sebas callback body",
+    });
+  }
+
+  const payload = {
+    objetosMensaje,
+    version: req.body?.version || "v2",
+  };
+
+  storeLatestMessageState(payload, "completed_with_sebas");
+
+  return res.status(200).json({
+    success: true,
+    message: "Sebas message stored successfully",
+    objetosMensaje: payload.objetosMensaje,
+    version: payload.version,
+  });
 };
 
 export const processMessage = async (req, res) => {
