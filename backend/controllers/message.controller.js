@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 
 let latestMessageState = null;
+let sebasRecords = [];
 
 const buildSebasMessageUrl = () => {
   const baseUrl = process.env.SEBASTIAN_MESSAGE_API_URL;
@@ -78,6 +79,12 @@ export const receiveSebasMessage = async (req, res) => {
   };
 
   storeLatestMessageState(payload, "completed_with_sebas");
+  
+  // Guardar el mensaje de Sebas en el array de registros
+  sebasRecords.push({
+    timestamp: new Date().toISOString(),
+    data: req.body,
+  });
 
   return res.status(200).json({
     success: true,
@@ -209,34 +216,18 @@ export const enrichMessage = async (req, res) => {
 
 export const getSebasRecords = async (req, res) => {
   try {
-    const sebasRecordsUrl = buildSebasRecordsUrl();
-    if (!sebasRecordsUrl) {
-      return res.status(500).json({
-        success: false,
-        message: "SEBASTIAN_RECORDS_API_URL is not configured",
+    if (sebasRecords.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No records from Sebas yet",
+        data: [],
       });
     }
 
-    const response = await fetch(sebasRecordsUrl, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      return res.status(response.status).json({
-        success: false,
-        message: "Failed to fetch records from Sebas",
-        status: response.status,
-      });
-    }
-
-    const sebasData = await response.json();
     return res.status(200).json({
       success: true,
-      message: "Records retrieved from Sebas successfully",
-      data: sebasData,
+      message: "Records from Sebas retrieved successfully",
+      data: sebasRecords,
     });
   } catch (error) {
     console.log("Error fetching Sebas records:", error.message);
