@@ -139,11 +139,17 @@ export const processMessage = async (req, res) => {
       );
     }
 
+    // Extraer datos específicos de Sebas (por ejemplo, vehiculo)
+    const vehiculo = responseBody?.vehiculo || null;
+    console.log("Vehículo de Sebas:", vehiculo);
+
     return res.status(200).json({
       success: true,
       message: "Message sent to Sebas successfully",
       objetosMensaje: payloadToSebas.objetosMensaje,
       version: "v2",
+      sebasResponse: responseBody,
+      vehiculo: vehiculo,
     });
   } catch (error) {
     console.log("Error processing message:", error.message);
@@ -187,6 +193,47 @@ export const enrichMessage = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error enriching message",
+      error: error.message,
+    });
+  }
+};
+
+export const getSebasRecords = async (req, res) => {
+  try {
+    const sebasMessageUrl = buildSebasMessageUrl();
+    if (!sebasMessageUrl) {
+      return res.status(500).json({
+        success: false,
+        message: "SEBASTIAN_MESSAGE_API_URL is not configured",
+      });
+    }
+
+    const response = await fetch(sebasMessageUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        message: "Failed to fetch records from Sebas",
+        status: response.status,
+      });
+    }
+
+    const sebasData = await response.json();
+    return res.status(200).json({
+      success: true,
+      message: "Records retrieved from Sebas successfully",
+      data: sebasData,
+    });
+  } catch (error) {
+    console.log("Error fetching Sebas records:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching records from Sebas",
       error: error.message,
     });
   }

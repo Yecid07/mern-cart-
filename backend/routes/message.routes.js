@@ -1,5 +1,5 @@
 import express from 'express';
-import { processMessage, enrichMessage, getLatestMessage } from '../controllers/message.controller.js';
+import { processMessage, enrichMessage, getLatestMessage, getSebasRecords } from '../controllers/message.controller.js';
 
 const router = express.Router();
 
@@ -10,6 +10,12 @@ const router = express.Router();
  */
 router.get('/', getLatestMessage);
 router.post('/', processMessage);
+
+/**
+ * GET /api/v2/mensaje/sebas/records
+ * Obtiene todos los registros de la API de Sebas
+ */
+router.get('/sebas/records', getSebasRecords);
 
 /**
  * POST /api/v2/mensaje/enrich
