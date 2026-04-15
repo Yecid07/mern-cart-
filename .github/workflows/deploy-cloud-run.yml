@@ -5,6 +5,11 @@ on:
     branches:
       - production
 
+env:
+  GCP_PROJECT_ID: project-f10ddf93-e2e5-4130-bc8
+  CLOUD_RUN_SERVICE: cart-api-orders
+  CLOUD_RUN_REGION: us-central1
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -16,7 +21,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
           export_default_credentials: true
 
       - name: Configure Docker for GCP
@@ -25,22 +30,22 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest .
-          docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:${{ github.sha }}
+          docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:latest .
+          docker tag gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:latest gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:${{ github.sha }}
 
       - name: Push to Container Registry
         run: |
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:${{ github.sha }}
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:latest
+          docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:${{ github.sha }}
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy cart-api-orders \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest \
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE }} \
+            --image gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.CLOUD_RUN_SERVICE }}:latest \
             --platform managed \
-            --region us-central1 \
+            --region ${{ env.CLOUD_RUN_REGION }} \
             --allow-unauthenticated \
-            --set-env-vars="MONGODB_URI=${{ secrets.MONGODB_URI }},NODE_ENV=production" \
+            --set-env-vars="MONGODB_URI=${{ secrets.MONGODB_URI }},NODE_ENV=production,SEBASTIAN_MESSAGE_API_URL=http://shipment-alb-468259091.us-east-2.elb.amazonaws.com/api/v2/mensaje" \
             --cpu 1 \
             --memory 512Mi \
             --timeout 60 \
@@ -48,6 +53,6 @@ jobs:
 
       - name: Get Cloud Run URL
         run: |
-          SERVICE_URL=$(gcloud run services describe cart-api-orders --region us-central1 --format 'value(status.url)')
+          SERVICE_URL=$(gcloud run services describe ${{ env.CLOUD_RUN_SERVICE }} --region ${{ env.CLOUD_RUN_REGION }} --format 'value(status.url)')
           echo "Cloud Run URL: $SERVICE_URL"
           echo "Service deployed successfully!"
