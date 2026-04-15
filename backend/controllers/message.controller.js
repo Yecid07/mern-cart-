@@ -27,83 +27,28 @@ const extractMessageObjects = (body = {}) => {
  * Recibe mensaje desde Santiago con el cuidador, agrega usuario y lo reenvia a Sebas.
  */
 export const processMessage = async (req, res) => {
-  try {
-    const objetosMensaje = extractMessageObjects(req.body);
-    const metadata = req.body?.metadata || {};
+ try {
+    const cuidador = req.body; // objeto enviado desde tu API .NET
 
-    await saveMessageLog({
-      stage: "received_from_santiago",
-      payload: req.body,
-      metadata,
-    });
-
-    if (objetosMensaje.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing objetosMensaje in the message chain",
-      });
+    if (!cuidador || !cuidador.email) {
+      return res.status(400).json({ error: "Payload inválido: falta cuidador.email" });
     }
 
-    const usuario = await User.findOne({}).lean();
-    if (!usuario) {
-      return res.status(404).json({
-        success: false,
-        message: "No users available to add to message chain",
-      });
-    }
+    // Buscar usuario relacionado en BD
+    const usuario = await User.findOne().lean();
 
-    const sebasMessageUrl = buildSebasMessageUrl();
-    if (!sebasMessageUrl) {
-      return res.status(500).json({
-        success: false,
-        message: "SEBASTIAN_MESSAGE_API_URL is not configured",
-      });
-    }
+    // Concatenar en una lista
+    const lista = [cuidador, usuario].filter(Boolean);
 
-    const updatedMessage = {
-      objetosMensaje: [...objetosMensaje, { usuario }],
-      metadata: {
-        ...metadata,
-        yecidProcessedAt: new Date().toISOString(),
-        yecidService: "Users API - Cloud Run (GCP)",
-      },
-      version: "v2",
-    };
+    // Si quieres guardar histórico:
+    // await MensajesModel.create({ cuidador, usuario, lista, createdAt: new Date() });
 
-    await saveMessageLog({
-      stage: "forwarded_to_sebas",
-      payload: updatedMessage,
-      metadata: updatedMessage.metadata,
+    return res.status(200).json({
+      mensaje: "Cuidador recibido y concatenado con usuario",
+      lista
     });
-
-    const downstreamResponse = await fetch(sebasMessageUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(updatedMessage),
-    });
-
-    const responseBody = await downstreamResponse.json();
-    await saveMessageLog({
-      stage: "response_from_sebas",
-      payload: responseBody,
-      metadata: updatedMessage.metadata,
-      statusCode: downstreamResponse.status,
-    });
-    return res.status(downstreamResponse.status).json(responseBody);
   } catch (error) {
-    console.log("Error processing message:", error.message);
-    await saveMessageLog({
-      stage: "message_chain_error",
-      payload: req.body,
-      error: error.message,
-    });
-    return res.status(500).json({
-      success: false,
-      message: "Server error processing message",
-      error: error.message,
-    });
+    return res.status(500).json({ error: "Error interno", detalle: error.message });
   }
 };
 

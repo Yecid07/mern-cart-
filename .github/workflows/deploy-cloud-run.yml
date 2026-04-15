@@ -1,0 +1,53 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          export_default_credentials: true
+
+      - name: Configure Docker for GCP
+        run: |
+          gcloud auth configure-docker gcr.io
+
+      - name: Build Docker image
+        run: |
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest .
+          docker tag gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:${{ github.sha }}
+
+      - name: Push to Container Registry
+        run: |
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:${{ github.sha }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy cart-api-orders \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/cart-api-orders:latest \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --set-env-vars="MONGODB_URI=${{ secrets.MONGODB_URI }},NODE_ENV=production" \
+            --cpu 1 \
+            --memory 512Mi \
+            --timeout 60 \
+            --max-instances 100
+
+      - name: Get Cloud Run URL
+        run: |
+          SERVICE_URL=$(gcloud run services describe cart-api-orders --region us-central1 --format 'value(status.url)')
+          echo "Cloud Run URL: $SERVICE_URL"
+          echo "Service deployed successfully!"
