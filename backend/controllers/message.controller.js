@@ -1,5 +1,7 @@
 import User from "../models/user.model.js";
 
+let latestMessageState = null;
+
 const buildSebasMessageUrl = () => {
   const baseUrl = process.env.SEBASTIAN_MESSAGE_API_URL;
   if (!baseUrl) {
@@ -28,6 +30,27 @@ const extractMessageObjects = (body = {}) => {
 const getRandomUser = async () => {
   const users = await User.aggregate([{ $sample: { size: 1 } }]);
   return users[0] || null;
+};
+
+const storeLatestMessageState = (payload, status) => {
+  latestMessageState = {
+    success: true,
+    status,
+    objetosMensaje: payload.objetosMensaje || [],
+    version: payload.version || "v2",
+    updatedAt: new Date().toISOString(),
+  };
+};
+
+export const getLatestMessage = async (req, res) => {
+  if (!latestMessageState) {
+    return res.status(404).json({
+      success: false,
+      message: "No message has been processed yet",
+    });
+  }
+
+  return res.status(200).json(latestMessageState);
 };
 
 export const processMessage = async (req, res) => {
@@ -61,6 +84,8 @@ export const processMessage = async (req, res) => {
       version: "v2",
     };
 
+    storeLatestMessageState(payloadToSebas, "waiting_for_sebas");
+
     const downstreamResponse = await fetch(sebasMessageUrl, {
       method: "POST",
       headers: {
@@ -70,11 +95,23 @@ export const processMessage = async (req, res) => {
     });
 
     if (!downstreamResponse.ok) {
+      storeLatestMessageState(payloadToSebas, "failed_to_send_to_sebas");
       return res.status(downstreamResponse.status).json({
         success: false,
         message: "Failed to send message to Sebas",
         objetosMensaje: payloadToSebas.objetosMensaje,
       });
+    }
+
+    const responseBody = await downstreamResponse.json();
+    if (responseBody?.objetosMensaje) {
+      storeLatestMessageState(
+        {
+          objetosMensaje: responseBody.objetosMensaje,
+          version: responseBody.version || "v2",
+        },
+        "completed_with_sebas"
+      );
     }
 
     return res.status(200).json({
@@ -105,11 +142,21 @@ export const enrichMessage = async (req, res) => {
       });
     }
 
-    return res.status(200).json({
+    const enrichedPayload = {
       success: true,
       objetosMensaje: [...objetosMensaje, { usuario }],
       apiVersion: "v2",
-    });
+    };
+
+    storeLatestMessageState(
+      {
+        objetosMensaje: enrichedPayload.objetosMensaje,
+        version: "v2",
+      },
+      "local_enriched"
+    );
+
+    return res.status(200).json(enrichedPayload);
   } catch (error) {
     console.log("Error enriching message:", error.message);
     return res.status(500).json({

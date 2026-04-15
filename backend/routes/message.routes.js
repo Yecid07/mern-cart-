@@ -1,5 +1,5 @@
 import express from 'express';
-import { processMessage, enrichMessage } from '../controllers/message.controller.js';
+import { processMessage, enrichMessage, getLatestMessage } from '../controllers/message.controller.js';
 
 const router = express.Router();
 
@@ -8,6 +8,7 @@ const router = express.Router();
  * Recibe mensaje con entidades previas y agrega Order (entidad C)
  * Req body: { entidadA: {...}, entidadB: {...}, metadata: {...} }
  */
+router.get('/', getLatestMessage);
 router.post('/', processMessage);
 
 /**
