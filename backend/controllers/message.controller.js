@@ -3,7 +3,7 @@ import User from "../models/user.model.js";
 let latestMessageState = null;
 
 const buildSebasMessageUrl = () => {
-  const baseUrl = process.env.SEBASTIAN_MESSAGE_API_URL;
+  const baseUrl = process.env.production.SEBASTIAN_MESSAGE_API_URL || process.env.SEBASTIAN_MESSAGE_API_URL;
   if (!baseUrl) {
     return null;
   }
