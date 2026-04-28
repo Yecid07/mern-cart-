@@ -1,0 +1,12 @@
+# Copia este archivo a terraform.tfvars y completa con tus valores
+
+gcp_project_id = "tu-project-id"
+gcp_region     = "us-central1"
+environment    = "dev"
+app_name       = "cart-api"
+machine_type   = "e2-medium"
+
+# URI de conexión a MongoDB Atlas
+# Formato: mongodb+srv://usuario:contraseña@cluster.mongodb.net/base_datos
+# Obtén esto desde: https://cloud.mongodb.com/v2 > Database > Connect
+mongodb_atlas_uri = "mongodb+srv://usuario:contraseña@cluster.mongodb.net/cart_production"

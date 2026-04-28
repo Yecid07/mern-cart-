@@ -1,0 +1,17 @@
+MongoDB Atlas Connection Information
+====================================
+
+Para conectarse a MongoDB Atlas remotamente:
+
+1. Ve a: https://cloud.mongodb.com/v2
+2. Selecciona tu proyecto
+3. Ve a Database Deployments
+4. Haz clic en "Connect"
+5. Selecciona "Atlas CLI" o "Connection String"
+6. Usa la URI en tu aplicación
+
+Para usar mongosh:
+mongosh "mongodb+srv://<username>:<password>@<cluster>.mongodb.net/cart_production"
+
+Para scripts de MongoDB:
+mongosh --uri "mongodb+srv://<username>:<password>@<cluster>.mongodb.net/cart_production" < script.js
